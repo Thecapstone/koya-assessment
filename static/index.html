@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f3f5ef" />
+    <title>Clinic appointments</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f3f5ef;
+        --ink: #172321;
+        --muted: #62706b;
+        --line: #d7ded6;
+        --green: #17684f;
+        --green-dark: #10513e;
+        --coral: #c5503d;
+        --white: #fffefa;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 86% 7%, #dfece0 0, transparent 34%),
+          var(--paper);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem clamp(1rem, 5vw, 4.5rem);
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-weight: 700;
+      }
+      .brand-mark {
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 50%;
+        background: var(--green);
+        position: relative;
+      }
+      .brand-mark::before,
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        background: white;
+        border-radius: 2px;
+      }
+      .brand-mark::before {
+        width: 11px;
+        height: 3px;
+        top: 11px;
+        left: 6px;
+      }
+      .brand-mark::after {
+        width: 3px;
+        height: 11px;
+        top: 7px;
+        left: 10px;
+      }
+      .key-form {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      main {
+        width: min(940px, calc(100% - 2rem));
+        margin: clamp(2rem, 7vh, 5rem) auto;
+      }
+      .eyebrow {
+        color: var(--green);
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      h1 {
+        margin: 0.55rem 0 0.45rem;
+        font:
+          500 clamp(2rem, 5vw, 3.2rem)/1.08 Georgia,
+          "Times New Roman",
+          serif;
+        letter-spacing: 0;
+      }
+      .intro {
+        margin: 0;
+        max-width: 42rem;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 0.8rem;
+        margin: 2rem 0 1rem;
+      }
+      label {
+        display: grid;
+        gap: 0.35rem;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+      input,
+      select {
+        min-height: 42px;
+        padding: 0.6rem 0.72rem;
+        color: var(--ink);
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font: inherit;
+      }
+      input:focus,
+      select:focus {
+        outline: 2px solid #78a894;
+        outline-offset: 1px;
+      }
+      .key-form input {
+        width: min(280px, 42vw);
+        min-height: 36px;
+        font-size: 0.88rem;
+      }
+      button {
+        min-height: 42px;
+        padding: 0.65rem 1rem;
+        border: 0;
+        border-radius: 4px;
+        color: white;
+        background: var(--green);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover {
+        background: var(--green-dark);
+      }
+      button:disabled {
+        opacity: 0.48;
+        cursor: not-allowed;
+      }
+      button.secondary {
+        color: var(--green-dark);
+        background: transparent;
+        border: 1px solid var(--line);
+      }
+      button.secondary:hover {
+        background: #e8eee7;
+      }
+      .section-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 2rem 0 0.5rem;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+      #slot-count {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+      .slot-list {
+        border-top: 1px solid var(--line);
+      }
+      .slot {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0.2rem;
+        border-bottom: 1px solid var(--line);
+        animation: arrive 0.28s ease both;
+      }
+      .slot time {
+        display: block;
+        font-weight: 700;
+      }
+      .slot .provider {
+        margin-top: 0.25rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .empty {
+        padding: 1.4rem 0.2rem;
+        color: var(--muted);
+        border-bottom: 1px solid var(--line);
+      }
+      .status {
+        min-height: 1.5rem;
+        margin: 0.7rem 0;
+        color: var(--coral);
+        font-size: 0.92rem;
+      }
+      .status.success {
+        color: var(--green-dark);
+      }
+      .bookings-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 0.7rem;
+        margin: 1rem 0;
+      }
+      .bookings-toolbar label {
+        min-width: min(320px, 100%);
+      }
+      .booking-list {
+        border-top: 1px solid var(--line);
+      }
+      .booking-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem 0.2rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .booking-row p {
+        margin: 0.25rem 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+        overflow-wrap: anywhere;
+      }
+      .booking-row .booking-ref {
+        color: var(--ink);
+        font-family: ui-monospace, monospace;
+        font-size: 0.78rem;
+      }
+      .booking-row .cancelled {
+        color: var(--muted);
+        font-size: 0.83rem;
+        font-weight: 700;
+      }
+      textarea {
+        width: 100%;
+        min-height: 190px;
+        resize: vertical;
+        padding: 0.7rem;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--white);
+        color: var(--ink);
+        font:
+          0.85rem/1.5 ui-monospace,
+          monospace;
+      }
+      textarea:focus {
+        outline: 2px solid #78a894;
+        outline-offset: 1px;
+      }
+      .warning {
+        color: var(--coral) !important;
+        font-size: 0.88rem;
+      }
+      dialog {
+        width: min(440px, calc(100% - 2rem));
+        padding: 1.4rem;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--ink);
+        background: var(--white);
+      }
+      dialog.wide {
+        width: min(620px, calc(100% - 2rem));
+      }
+      dialog::backdrop {
+        background: #15231f88;
+      }
+      dialog h2 {
+        margin-bottom: 0.35rem;
+        font:
+          500 1.5rem Georgia,
+          "Times New Roman",
+          serif;
+      }
+      dialog p {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .form-grid {
+        display: grid;
+        gap: 0.85rem;
+        margin: 1.2rem 0;
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: end;
+        gap: 0.55rem;
+      }
+      .booking-id {
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, monospace;
+        font-size: 0.85rem;
+      }
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 560px) {
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .key-form {
+          width: 100%;
+        }
+        .key-form input {
+          width: 100%;
+          flex: 1;
+        }
+        .toolbar {
+          align-items: stretch;
+        }
+        .toolbar label {
+          flex: 1 1 100%;
+        }
+        .toolbar select,
+        .toolbar button {
+          width: 100%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span
+        ><span>Greenway Clinic</span>
+      </div>
+      <form class="key-form" id="key-form">
+        <label for="api-base-url">API URL</label>
+        <input
+          id="api-base-url"
+          type="url"
+          autocomplete="url"
+          placeholder="https://your-api-service.onrender.com"
+          required
+        />
+        <label for="api-key">API key</label>
+        <input
+          id="api-key"
+          type="password"
+          autocomplete="off"
+          placeholder="Enter clinic API key"
+          required
+        />
+        <button type="submit" class="secondary">Connect</button>
+      </form>
+    </header>
+    <main>
+      <p class="eyebrow">Appointments</p>
+      <h1>Find a time that works.</h1>
+      <p class="intro">
+        Browse available clinic appointments and reserve a time with your care
+        provider.
+      </p>
+
+      <div class="toolbar">
+        <label for="provider-filter"
+          >Provider
+          <select id="provider-filter">
+            <option value="">All providers</option>
+          </select>
+        </label>
+        <button id="refresh-button" class="secondary" type="button">
+          Show available slots
+        </button>
+        <span class="spacer"></span>
+        <button id="reset-button" class="secondary" type="button">
+          Reset schedule
+        </button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <div class="section-heading">
+        <h2>Available times</h2>
+        <span id="slot-count"></span>
+      </div>
+      <div id="slot-list" class="slot-list">
+        <div class="empty">Connect with your API key to see appointments.</div>
+      </div>
+
+      <section aria-labelledby="bookings-heading">
+        <div class="section-heading">
+          <h2 id="bookings-heading">Bookings</h2>
+        </div>
+        <form class="bookings-toolbar" id="bookings-form">
+          <label for="bookings-email"
+            >Patient email
+            <input
+              id="bookings-email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+          </label>
+          <button type="submit" id="fetch-bookings-button">
+            Fetch bookings
+          </button>
+        </form>
+        <div
+          id="bookings-status"
+          class="status"
+          role="status"
+          aria-live="polite"
+        ></div>
+        <div id="booking-list" class="booking-list">
+          <div class="empty">Enter an email to view its booking history.</div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="booking-dialog">
+      <form id="booking-form">
+        <h2>Reserve this appointment</h2>
+        <p id="selected-slot"></p>
+        <div class="form-grid">
+          <label for="patient-name"
+            >Your name<input
+              id="patient-name"
+              name="name"
+              autocomplete="name"
+              required
+          /></label>
+          <label for="patient-email"
+            >Email address<input
+              id="patient-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+          /></label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="secondary" id="close-dialog">
+            Back
+          </button>
+          <button type="submit">Confirm appointment</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="confirmation-dialog">
+      <h2>Appointment confirmed</h2>
+      <p id="confirmation-copy"></p>
+      <p class="booking-id" id="confirmation-id"></p>
+      <div class="dialog-actions">
+        <button id="close-confirmation" type="button">Done</button>
+      </div>
+    </dialog>
+
+    <dialog id="reset-dialog" class="wide">
+      <form id="reset-form">
+        <h2>Reset appointment schedule</h2>
+        <p class="warning">
+          Reset replaces every slot and permanently clears all current booking
+          records.
+        </p>
+        <label for="reset-slots">Slots (JSON array)</label>
+        <textarea id="reset-slots" spellcheck="false" required></textarea>
+        <div class="dialog-actions" style="margin-top: 1rem">
+          <button type="button" class="secondary" id="close-reset">
+            Keep current schedule
+          </button>
+          <button type="submit">Reset schedule</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script>
+      const apiBaseUrlInput = document.querySelector("#api-base-url");
+      const apiKeyInput = document.querySelector("#api-key");
+      const slotsNode = document.querySelector("#slot-list");
+      const providerFilter = document.querySelector("#provider-filter");
+      const statusNode = document.querySelector("#status");
+      const bookingDialog = document.querySelector("#booking-dialog");
+      const confirmationDialog = document.querySelector("#confirmation-dialog");
+      const resetDialog = document.querySelector("#reset-dialog");
+      const bookingsEmail = document.querySelector("#bookings-email");
+      const bookingListNode = document.querySelector("#booking-list");
+      const bookingsStatusNode = document.querySelector("#bookings-status");
+      let slots = [];
+      let bookings = [];
+      let selectedSlot = null;
+
+      const demoStart = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const defaultSlots = Array.from({ length: 5 }, (_, index) => {
+        const start = new Date(demoStart.getTime() + index * 60 * 60 * 1000);
+        const end = new Date(start.getTime() + 30 * 60 * 1000);
+        return {
+          id: `s${index + 1}`,
+          provider: index % 2 === 0 ? "Dr Ade" : "Dr Nneka",
+          start: start.toISOString(),
+          end: end.toISOString(),
+        };
+      });
+      document.querySelector("#reset-slots").value = JSON.stringify(
+        defaultSlots,
+        null,
+        2,
+      );
+
+      function headers() {
+        return {
+          "X-API-Key": apiKeyInput.value.trim(),
+          "Content-Type": "application/json",
+        };
+      }
+
+      async function api(path, options = {}) {
+        const apiBaseUrl = apiBaseUrlInput.value.trim().replace(/\/+$/, "");
+        const response = await fetch(`${apiBaseUrl}${path}`, {
+          ...options,
+          headers: { ...headers(), ...options.headers },
+        });
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.error || "The request could not be completed.");
+        return data;
+      }
+
+      function showStatus(message = "", success = false) {
+        statusNode.textContent = message;
+        statusNode.classList.toggle("success", success);
+      }
+
+      function showBookingsStatus(message = "", success = false) {
+        bookingsStatusNode.textContent = message;
+        bookingsStatusNode.classList.toggle("success", success);
+      }
+
+      function formatTime(value) {
+        return new Intl.DateTimeFormat(undefined, {
+          weekday: "short",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }).format(new Date(value));
+      }
+
+      function renderSlots() {
+        const provider = providerFilter.value;
+        const visible = slots.filter(
+          (slot) => slot.available && (!provider || slot.provider === provider),
+        );
+        document.querySelector("#slot-count").textContent =
+          `${visible.length} available`;
+        slotsNode.replaceChildren();
+        if (!visible.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "No available times match this provider.";
+          slotsNode.append(empty);
+          return;
+        }
+        visible.forEach((slot, index) => {
+          const item = document.createElement("article");
+          item.className = "slot";
+          item.style.animationDelay = `${Math.min(index, 8) * 25}ms`;
+          const details = document.createElement("div");
+          const time = document.createElement("time");
+          time.dateTime = slot.start;
+          time.textContent = formatTime(slot.start);
+          const providerName = document.createElement("div");
+          providerName.className = "provider";
+          providerName.textContent = slot.provider;
+          details.append(time, providerName);
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Book";
+          button.addEventListener("click", () => openBooking(slot));
+          item.append(details, button);
+          slotsNode.append(item);
+        });
+      }
+
+      async function loadSlots() {
+        if (!apiKeyInput.value.trim()) {
+          showStatus("Enter the API key to continue.");
+          return;
+        }
+        showStatus("Loading appointment times...");
+        try {
+          const result = await api("/slots");
+          slots = result.slots;
+          const currentProvider = providerFilter.value;
+          const providers = [
+            ...new Set(slots.map((slot) => slot.provider)),
+          ].sort();
+          providerFilter.replaceChildren(new Option("All providers", ""));
+          providers.forEach((provider) =>
+            providerFilter.add(new Option(provider, provider)),
+          );
+          providerFilter.value = providers.includes(currentProvider)
+            ? currentProvider
+            : "";
+          renderSlots();
+          showStatus("");
+        } catch (error) {
+          showStatus(error.message);
+        }
+      }
+
+      function openBooking(slot) {
+        selectedSlot = slot;
+        document.querySelector("#selected-slot").textContent =
+          `${formatTime(slot.start)} with ${slot.provider}`;
+        bookingDialog.showModal();
+      }
+
+      function renderBookings(bookingItems) {
+        bookingListNode.replaceChildren();
+        if (!bookingItems.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "No bookings found for this email.";
+          bookingListNode.append(empty);
+          return;
+        }
+        bookingItems.forEach((booking) => {
+          const row = document.createElement("article");
+          row.className = "booking-row";
+          const details = document.createElement("div");
+          const name = document.createElement("strong");
+          name.textContent = `${booking.name} · ${booking.status}`;
+          const appointment = document.createElement("p");
+          const bookedSlot = slots.find((slot) => slot.id === booking.slot_id);
+          appointment.textContent = bookedSlot
+            ? `${bookedSlot.provider} · ${formatTime(bookedSlot.start)}`
+            : `Slot ${booking.slot_id}`;
+          const reference = document.createElement("p");
+          reference.className = "booking-ref";
+          reference.textContent = booking.id;
+          details.append(name, appointment, reference);
+          row.append(details);
+          if (booking.status === "confirmed") {
+            const cancelButton = document.createElement("button");
+            cancelButton.type = "button";
+            cancelButton.className = "secondary";
+            cancelButton.textContent = "Cancel";
+            cancelButton.title =
+              "Cancel this booking using the DELETE endpoint";
+            cancelButton.addEventListener("click", () =>
+              cancelBooking(booking),
+            );
+            row.append(cancelButton);
+          } else {
+            const status = document.createElement("span");
+            status.className = "cancelled";
+            status.textContent = "Cancelled";
+            row.append(status);
+          }
+          bookingListNode.append(row);
+        });
+      }
+
+      async function loadBookings() {
+        if (!bookingsEmail.reportValidity()) return;
+        const email = bookingsEmail.value.trim();
+        const fetchedBookings = [];
+        let cursor = null;
+        showBookingsStatus("Loading booking history...");
+        try {
+          do {
+            const params = new URLSearchParams({ email, limit: "50" });
+            if (cursor) params.set("cursor", cursor);
+            const page = await api(`/bookings?${params.toString()}`);
+            fetchedBookings.push(...page.bookings);
+            cursor = page.next_cursor;
+          } while (cursor);
+          bookings = fetchedBookings;
+          renderBookings(bookings);
+          showBookingsStatus(
+            `${bookings.length} booking${bookings.length === 1 ? "" : "s"} found.`,
+            true,
+          );
+        } catch (error) {
+          showBookingsStatus(error.message);
+        }
+      }
+
+      async function cancelBooking(booking) {
+        if (
+          !window.confirm(
+            "Cancel this booking? It will remain in the history as cancelled.",
+          )
+        )
+          return;
+        try {
+          await api(`/bookings/${encodeURIComponent(booking.id)}`, {
+            method: "DELETE",
+          });
+          bookings = bookings.map((item) =>
+            item.id === booking.id ? { ...item, status: "cancelled" } : item,
+          );
+          renderBookings(bookings);
+          showBookingsStatus("Booking cancelled.", true);
+          await loadSlots();
+        } catch (error) {
+          showBookingsStatus(error.message);
+        }
+      }
+
+      document
+        .querySelector("#key-form")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
+          sessionStorage.setItem(
+            "clinic-api-url",
+            apiBaseUrlInput.value.trim(),
+          );
+          sessionStorage.setItem("clinic-api-key", apiKeyInput.value.trim());
+          loadSlots();
+        });
+      document
+        .querySelector("#refresh-button")
+        .addEventListener("click", loadSlots);
+      document
+        .querySelector("#bookings-form")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
+          loadBookings();
+        });
+      document
+        .querySelector("#reset-button")
+        .addEventListener("click", () => resetDialog.showModal());
+      document
+        .querySelector("#close-reset")
+        .addEventListener("click", () => resetDialog.close());
+      document
+        .querySelector("#reset-form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (
+            !window.confirm(
+              "This replaces all slots and clears every booking. Continue?",
+            )
+          )
+            return;
+          try {
+            const resetSlots = JSON.parse(
+              document.querySelector("#reset-slots").value,
+            );
+            if (!Array.isArray(resetSlots))
+              throw new Error("Slots must be a JSON array.");
+            await api("/reset", {
+              method: "POST",
+              body: JSON.stringify({ slots: resetSlots }),
+            });
+            resetDialog.close();
+            bookings = [];
+            renderBookings([]);
+            showBookingsStatus("");
+            showStatus("Schedule reset and bookings cleared.", true);
+            await loadSlots();
+          } catch (error) {
+            showStatus(
+              error.message === "Unexpected end of JSON input"
+                ? "Enter a valid JSON array of slots."
+                : error.message,
+            );
+          }
+        });
+      providerFilter.addEventListener("change", renderSlots);
+      document
+        .querySelector("#close-dialog")
+        .addEventListener("click", () => bookingDialog.close());
+      document
+        .querySelector("#close-confirmation")
+        .addEventListener("click", () => confirmationDialog.close());
+
+      document
+        .querySelector("#booking-form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const formNode = event.currentTarget;
+          const form = new FormData(formNode);
+          const button = formNode.querySelector("button[type=submit]");
+          button.disabled = true;
+          try {
+            const booking = await api("/bookings", {
+              method: "POST",
+              headers: { "Idempotency-Key": crypto.randomUUID() },
+              body: JSON.stringify({
+                slot_id: selectedSlot.id,
+                name: form.get("name"),
+                email: form.get("email"),
+              }),
+            });
+            bookingDialog.close();
+            document.querySelector("#confirmation-copy").textContent =
+              `${formatTime(selectedSlot.start)} with ${selectedSlot.provider} is reserved for ${booking.name}.`;
+            document.querySelector("#confirmation-id").textContent =
+              `Booking reference: ${booking.id}`;
+            confirmationDialog.showModal();
+            formNode.reset();
+            bookingsEmail.value = booking.email;
+            await loadSlots();
+          } catch (error) {
+            showStatus(error.message);
+          } finally {
+            button.disabled = false;
+          }
+        });
+
+      const defaultApiUrl = ["localhost", "127.0.0.1"].includes(
+        window.location.hostname,
+      )
+        ? "http://127.0.0.1:8000"
+        : "https://koya-clinic-booking-api.onrender.com";
+      apiBaseUrlInput.value =
+        sessionStorage.getItem("clinic-api-url") || defaultApiUrl;
+      apiKeyInput.value = sessionStorage.getItem("clinic-api-key") || "";
+      if (apiKeyInput.value) loadSlots();
+    </script>
+  </body>
+</html>
